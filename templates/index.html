@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Analytics - Анализ данных</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: #ffffff;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-weight: normal;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #666666;
+        }
+
+        .upload-section {
+            background-color: #f8fafc;
+            border: 2px dashed #1e3a8a;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #3b82f6;
+            background-color: #f1f5f9;
+        }
+
+        .upload-section.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .upload-progress {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e3a8a, #3b82f6);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #1e3a8a;
+            font-weight: 500;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background-color: #3b82f6;
+        }
+
+        .file-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e0f2fe;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .data-section {
+            display: none;
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .data-table th {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: normal;
+            border-right: 1px solid #3b82f6;
+            font-size: 0.85rem;
+        }
+
+        .data-table th:last-child {
+            border-right: none;
+        }
+
+        .data-table td {
+            padding: 6px 6px;
+            border-bottom: 1px solid #e5e7eb;
+            border-right: 1px solid #f3f4f6;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .data-table td:last-child {
+            border-right: none;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .load-more-btn {
+            background-color: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .load-more-btn:hover {
+            background-color: #4b5563;
+        }
+
+        .analytics-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .analytics-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .analytics-card h3 {
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .analytics-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .analytics-item:last-child {
+            border-bottom: none;
+        }
+
+        .analytics-label {
+            color: #6b7280;
+        }
+
+        .analytics-value {
+            color: #1e3a8a;
+            font-weight: bold;
+        }
+
+        .charts-section {
+            margin-bottom: 40px;
+        }
+
+        .chart-controls {
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .control-group {
+            display: inline-block;
+            text-align: left;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            color: #1e3a8a;
+            font-size: 1rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .category-select {
+            padding: 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Georgia', serif;
+            font-size: 1rem;
+            background-color: white;
+            min-width: 300px;
+            cursor: pointer;
+        }
+
+        .category-select:focus {
+            outline: none;
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .ai-analysis-section {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+        }
+
+        .ai-analysis-title {
+            color: #1e3a8a;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .pdf-export-section {
+            background: #ffffff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+
+        .pdf-export-title {
+            color: #007bff;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .pdf-btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+        }
+
+        .pdf-btn:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
+        }
+
+        .pdf-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pdf-loading {
+            display: none;
+            margin-top: 10px;
+            color: #007bff;
+            font-style: italic;
+        }
+
+        .pdf-loading.show {
+            display: block;
+        }
+
+        .ai-placeholder {
+            background-color: #e5e7eb;
+            color: #6b7280;
+            padding: 40px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .ai-btn {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .ai-btn:hover {
+            background-color: #3b82f6;
+        }
+
+        .ai-buttons-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .yandex-btn {
+            background-color: #1e3a8a;
+        }
+
+        .yandex-btn:hover {
+            background-color: #1e40af;
+        }
+
+        .gigachat-btn {
+            background-color: #059669;
+        }
+
+        .gigachat-btn:hover {
+            background-color: #047857;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #1e3a8a;
+        }
+
+        .error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 1px solid #fecaca;
+        }
+
+        .success {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            border: 1px solid #bbf7d0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .analytics-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .data-table {
+                font-size: 0.7rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 4px 3px;
+            }
+            
+            .table-container {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Excel Analytics</h1>
+            <p>Загрузите Excel, CSV или PDF файл для анализа данных</p>
+        </div>
+
+        <div class="upload-section" id="uploadSection">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">
+                Перетащите файл сюда или нажмите для выбора<br>
+                <small style="color: #6b7280; font-size: 0.9rem;">Максимальный размер: 200 MB</small>
+            </div>
+            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls,.csv,.pdf">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                Выбрать файл
+            </button>
+            <div class="file-info" id="fileInfo"></div>
+            <div class="upload-progress" id="uploadProgress" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Загрузка файла...</div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <p>Обрабатываем файл...</p>
+        </div>
+
+        <div class="data-section" id="dataSection">
+            <h2 class="section-title">📋 Данные</h2>
+            <div class="table-container">
+                <table class="data-table" id="dataTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+            <div style="text-align: center;">
+                <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreData()">
+                    Показать ещё 100 строк
+                </button>
+            </div>
+        </div>
+
+        <div class="analytics-section" id="analyticsSection">
+            <div class="analytics-card">
+                <h3>📈 Общая статистика</h3>
+                <div id="generalStats"></div>
+            </div>
+            <div class="analytics-card">
+                <h3>🔢 Числовые столбцы</h3>
+                <div id="numericStats"></div>
+            </div>
+            <div class="analytics-card">
+                <h3>📊 Типы данных</h3>
+                <div id="dataTypes"></div>
+            </div>
+            <div class="analytics-card">
+                <h3>🔍 Уникальные значения</h3>
+                <div id="uniqueValues"></div>
+            </div>
+        </div>
+
+        <div class="charts-section" id="chartsSection">
+            <h2 class="section-title">📊 Диаграммы</h2>
+            
+            <!-- Селектор категории для диаграмм -->
+            <div class="chart-controls" id="chartControls" style="display: none;">
+                <div class="control-group">
+                    <label for="categorySelect">Выберите категорию для диаграммы:</label>
+                    <select id="categorySelect" class="category-select" onchange="createChartForCategory()">
+                        <option value="">-- Выберите категорию --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="chartsContainer"></div>
+        </div>
+
+        <div class="ai-analysis-section" id="aiAnalysisSection">
+            <h2 class="ai-analysis-title">🤖 Анализ от нейросетей</h2>
+            <div class="ai-placeholder" id="aiPlaceholder">
+                Здесь появится вывод от нейросетей
+            </div>
+            <div class="ai-buttons-container">
+                <button class="ai-btn yandex-btn" onclick="runYandexAnalysis()">
+                    🔵 Анализ Яндекс.GPT
+                </button>
+                <button class="ai-btn gigachat-btn" onclick="runGigaChatAnalysis()">
+                    🟢 Анализ GigaChat
+                </button>
+            </div>
+        </div>
+
+        <div class="pdf-export-section" id="pdfExportSection">
+            <h2 class="pdf-export-title">📄 Экспорт отчёта</h2>
+            <p style="color: #6b7280; margin-bottom: 15px; font-size: 0.9rem;">
+                Создайте профессиональный PDF отчёт с данными, аналитикой и AI анализом
+            </p>
+            <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">
+                📥 Скачать PDF отчёт
+            </button>
+            <div class="pdf-loading" id="pdfLoading">
+                ⏳ Генерация PDF отчёта на сервере...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = null;
+        let currentFilename = null;
+        let currentStartRow = 0;
+
+        // Обработка drag & drop
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.match(/\.(xlsx|xls|csv|pdf)$/i)) {
+                showError('Пожалуйста, выберите файл Excel (.xlsx, .xls), CSV (.csv) или PDF (.pdf)');
+                return;
+            }
+
+            // Проверяем размер файла (200 MB = 200 * 1024 * 1024 байт)
+            const maxSize = 200 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showError(`Файл слишком большой. Максимальный размер: 200 MB. Ваш файл: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Показываем индикатор загрузки
+            showUploadProgress(true, 0, 'Подготовка к загрузке...');
+            hideError();
+
+            // Симулируем прогресс загрузки
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                updateUploadProgress(progress, `Загрузка файла... ${Math.round(progress)}%`);
+            }, 200);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                updateUploadProgress(100, 'Обработка завершена!');
+                
+                setTimeout(() => {
+                    showUploadProgress(false);
+                    showLoading(false);
+                }, 500);
+
+                if (data.success) {
+                    currentData = data;
+                    currentFilename = data.filename;
+                    currentStartRow = 100;
+                    displayData(data);
+                    showSuccess(`Файл "${file.name}" успешно загружен`);
+                } else {
+                    showError(data.error || 'Ошибка загрузки файла');
+                }
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                showUploadProgress(false);
+                showLoading(false);
+                showError('Ошибка загрузки файла: ' + error.message);
+            });
+        }
+
+        function displayData(data) {
+            // Показываем информацию о файле
+            let fileInfo = `
+                <strong>Файл:</strong> ${data.filename}<br>
+                <strong>Размер:</strong> ${data.file_size_mb} MB<br>
+                <strong>Строк:</strong> ${data.total_rows}<br>
+                <strong>Столбцов:</strong> ${data.columns.length}
+            `;
+            
+            if (data.is_large_file) {
+                fileInfo += `<br><strong style="color: #dc2626;">⚠️ Большой файл - показаны первые 10,000 строк</strong>`;
+            }
+            
+            document.getElementById('fileInfo').innerHTML = fileInfo;
+            document.getElementById('fileInfo').style.display = 'block';
+
+            // Создаем таблицу
+            createTable(data.data, data.columns);
+            
+            // Показываем аналитику
+            displayAnalytics(data.analytics);
+            
+            // Показываем типы данных
+            displayDataTypes(data.data_types);
+            
+            // Показываем уникальные значения
+            displayUniqueValues(data.analytics);
+            
+            // Показываем диаграммы
+            displayCharts(data.charts);
+            
+            // Показываем элементы управления диаграммами
+            displayChartControls(data.categories);
+            
+            // Показываем секции
+            document.getElementById('dataSection').style.display = 'block';
+            document.getElementById('analyticsSection').style.display = 'grid';
+            document.getElementById('chartsSection').style.display = 'block';
+            document.getElementById('aiAnalysisSection').style.display = 'block';
+
+            // Показываем секцию экспорта PDF
+            showPDFExportSection();
+
+            // Обновляем кнопку "Показать ещё"
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (data.has_more_data) {
+                loadMoreBtn.style.display = 'inline-block';
+            } else {
+                loadMoreBtn.style.display = 'none';
+            }
+        }
+
+        function createTable(data, columns) {
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+
+            // Создаем заголовки
+            tableHead.innerHTML = '<tr>' + columns.map(col => `<th>${col}</th>`).join('') + '</tr>';
+
+            // Создаем строки данных
+            tableBody.innerHTML = data.map(row => 
+                '<tr>' + columns.map(col => {
+                    const value = row[col];
+                    // Обрабатываем пустые значения
+                    if (value === null || value === undefined || value === '' || String(value).trim() === '') {
+                        return '<td style="color: #9ca3af; font-style: italic;">—</td>';
+                    }
+                    return `<td>${value}</td>`;
+                }).join('') + '</tr>'
+            ).join('');
+        }
+
+        function displayAnalytics(analytics) {
+            // Общая статистика
+            const summaryStats = analytics.summary_stats || {};
+            document.getElementById('generalStats').innerHTML = `
+                <div class="analytics-item">
+                    <span class="analytics-label">Всего строк:</span>
+                    <span class="analytics-value">${analytics.total_rows.toLocaleString()}</span>
+                </div>
+                <div class="analytics-item">
+                    <span class="analytics-label">Всего столбцов:</span>
+                    <span class="analytics-value">${analytics.total_columns}</span>
+                </div>
+                <div class="analytics-item">
+                    <span class="analytics-label">Числовые столбцы:</span>
+                    <span class="analytics-value">${summaryStats.numeric_columns || 0}</span>
+                </div>
+                <div class="analytics-item">
+                    <span class="analytics-label">Текстовые столбцы:</span>
+                    <span class="analytics-value">${summaryStats.text_columns || 0}</span>
+                </div>
+                <div class="analytics-item">
+                    <span class="analytics-label">Заполненность:</span>
+                    <span class="analytics-value">${summaryStats.completeness_percentage || 0}%</span>
+                </div>
+            `;
+
+            // Статистика по числовым столбцам
+            const numericStats = Object.entries(analytics.columns_info)
+                .filter(([col, info]) => info.dtype.includes('int') || info.dtype.includes('float'))
+                .map(([col, info]) => `
+                    <div class="analytics-item">
+                        <span class="analytics-label">${col}:</span>
+                        <span class="analytics-value">$${info.sum.toLocaleString()}</span>
+                    </div>
+                    <div class="analytics-item" style="margin-left: 20px; font-size: 0.9em;">
+                        <span class="analytics-label">Среднее:</span>
+                        <span class="analytics-value">$${info.mean.toLocaleString()}</span>
+                    </div>
+                    <div class="analytics-item" style="margin-left: 20px; font-size: 0.9em;">
+                        <span class="analytics-label">Мин/Макс:</span>
+                        <span class="analytics-value">$${info.min.toLocaleString()} / $${info.max.toLocaleString()}</span>
+                    </div>
+                `).join('');
+
+            document.getElementById('numericStats').innerHTML = numericStats || 
+                '<div class="analytics-item"><span class="analytics-label">Числовые столбцы не найдены</span></div>';
+        }
+
+        function displayDataTypes(dataTypes) {
+            const dataTypesHtml = Object.entries(dataTypes)
+                .map(([col, type]) => {
+                    const typeIcon = type === 'numeric' ? '🔢' : type === 'datetime' ? '📅' : '📝';
+                    const typeName = type === 'numeric' ? 'Числовой' : type === 'datetime' ? 'Дата' : 'Текстовый';
+                    return `
+                        <div class="analytics-item">
+                            <span class="analytics-label">${typeIcon} ${col}:</span>
+                            <span class="analytics-value">${typeName}</span>
+                        </div>
+                    `;
+                }).join('');
+
+            document.getElementById('dataTypes').innerHTML = dataTypesHtml || 
+                '<div class="analytics-item"><span class="analytics-label">Типы данных не определены</span></div>';
+        }
+
+        function displayUniqueValues(analytics) {
+            const uniqueValuesHtml = Object.entries(analytics.columns_info)
+                .filter(([col, info]) => info.dtype === 'object' && info.unique_values_count !== undefined)
+                .map(([col, info]) => `
+                    <div class="analytics-item">
+                        <span class="analytics-label">📊 ${col}:</span>
+                        <span class="analytics-value">${info.unique_values_count} уникальных</span>
+                    </div>
+                    <div class="analytics-item" style="margin-left: 20px; font-size: 0.9em;">
+                        <span class="analytics-label">Топ значения:</span>
+                        <span class="analytics-value">${Object.entries(info.top_values || {}).slice(0, 3).map(([k, v]) => `${k} (${v})`).join(', ')}</span>
+                    </div>
+                `).join('');
+
+            document.getElementById('uniqueValues').innerHTML = uniqueValuesHtml || 
+                '<div class="analytics-item"><span class="analytics-label">Категориальные столбцы не найдены</span></div>';
+        }
+
+        function displayCharts(charts) {
+            const container = document.getElementById('chartsContainer');
+            
+            if (charts.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6b7280;">Диаграммы не могут быть построены для данного набора данных</p>';
+                return;
+            }
+
+            container.innerHTML = charts.map(chart => `
+                <div class="chart-container">
+                    <h3 class="chart-title">${chart.title}</h3>
+                    <div id="chart-${chart.type}" style="height: 400px;"></div>
+                </div>
+            `).join('');
+
+            // Рендерим диаграммы
+            charts.forEach(chart => {
+                const chartData = JSON.parse(chart.data);
+                Plotly.newPlot(`chart-${chart.type}`, chartData.data, chartData.layout, {responsive: true});
+            });
+        }
+
+        function displayChartControls(categories) {
+            const categorySelect = document.getElementById('categorySelect');
+            const chartControls = document.getElementById('chartControls');
+            
+            if (!categories || !categories.text_columns || categories.text_columns.length === 0) {
+                chartControls.style.display = 'none';
+                return;
+            }
+            
+            // Заполняем селектор категориями
+            categorySelect.innerHTML = '<option value="">-- Выберите категорию --</option>';
+            
+            categories.text_columns.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = `${category} (${categories[category]?.unique_count || 0} уникальных)`;
+                categorySelect.appendChild(option);
+            });
+            
+            chartControls.style.display = 'block';
+        }
+
+        function createChartForCategory() {
+            const categorySelect = document.getElementById('categorySelect');
+            
+            if (!categorySelect.value) {
+                return;
+            }
+            
+            if (!currentFilename) {
+                showError('Файл не загружен');
+                return;
+            }
+            
+            const category = categorySelect.value;
+            
+            // Показываем загрузку
+            categorySelect.disabled = true;
+            const originalText = categorySelect.options[0].textContent;
+            categorySelect.options[0].textContent = 'Создаем диаграмму...';
+            
+            fetch('/create_chart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: currentFilename,
+                    category: category,
+                    chart_type: 'bar'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Заменяем существующие диаграммы новой
+                    const container = document.getElementById('chartsContainer');
+                    const chartHtml = `
+                        <div class="chart-container">
+                            <h3 class="chart-title">${data.chart.title}</h3>
+                            <div id="chart-custom" style="height: 400px;"></div>
+                        </div>
+                    `;
+                    container.innerHTML = chartHtml;
+                    
+                    // Рендерим диаграмму
+                    const chartData = JSON.parse(data.chart.data);
+                    Plotly.newPlot('chart-custom', chartData.data, chartData.layout, {responsive: true});
+                    
+                    showSuccess(`Диаграмма "${data.chart.title}" создана успешно`);
+                } else {
+                    showError(data.error || 'Ошибка создания диаграммы');
+                }
+            })
+            .catch(error => {
+                showError('Ошибка создания диаграммы: ' + error.message);
+            })
+            .finally(() => {
+                categorySelect.disabled = false;
+                categorySelect.options[0].textContent = originalText;
+            });
+        }
+
+        function loadMoreData() {
+            if (!currentFilename) return;
+
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            loadMoreBtn.textContent = 'Загрузка...';
+            loadMoreBtn.disabled = true;
+
+            fetch('/load_more', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: currentFilename,
+                    start_row: currentStartRow,
+                    rows_count: 100
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Добавляем новые строки к таблице
+                    const tableBody = document.getElementById('tableBody');
+                    const newRows = data.data.map(row => 
+                        '<tr>' + currentData.columns.map(col => {
+                            const value = row[col];
+                            // Обрабатываем пустые значения
+                            if (value === null || value === undefined || value === '' || String(value).trim() === '') {
+                                return '<td style="color: #9ca3af; font-style: italic;">—</td>';
+                            }
+                            return `<td>${value}</td>`;
+                        }).join('') + '</tr>'
+                    ).join('');
+                    tableBody.innerHTML += newRows;
+
+                    currentStartRow = data.end_row;
+
+                    // Обновляем кнопку
+                    if (data.has_more_data) {
+                        loadMoreBtn.textContent = 'Показать ещё 100 строк';
+                        loadMoreBtn.disabled = false;
+                    } else {
+                        loadMoreBtn.style.display = 'none';
+                    }
+                } else {
+                    showError(data.error || 'Ошибка загрузки данных');
+                    loadMoreBtn.textContent = 'Показать ещё 100 строк';
+                    loadMoreBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                showError('Ошибка загрузки данных: ' + error.message);
+                loadMoreBtn.textContent = 'Показать ещё 100 строк';
+                loadMoreBtn.disabled = false;
+            });
+        }
+
+        // Глобальные переменные для хранения анализов
+        let yandexAnalysis = '';
+        let gigachatAnalysis = '';
+
+        function runYandexAnalysis() {
+            if (!currentFilename) {
+                showError('Сначала загрузите файл для анализа');
+                return;
+            }
+
+            const aiPlaceholder = document.getElementById('aiPlaceholder');
+            const yandexBtn = document.querySelector('.yandex-btn');
+            
+            // Показываем состояние загрузки
+            aiPlaceholder.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="color: #1e3a8a; font-size: 1.2rem; margin-bottom: 10px;">🔵 Анализируем данные...</div>
+                    <div style="color: #6b7280;">Отправляем первые 15 строк в Яндекс.GPT</div>
+                    <div style="margin-top: 10px; font-size: 0.9rem; color: #9ca3af;">Это может занять несколько секунд</div>
+                </div>
+            `;
+            yandexBtn.disabled = true;
+            yandexBtn.textContent = 'Анализируем...';
+
+            fetch('/yandex_analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: currentFilename
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const analysis = data.analysis;
+                    yandexAnalysis = analysis.content;
+                    
+                    // Обновляем отображение с учетом обоих анализов
+                    updateAIDisplay();
+                    
+                    showSuccess('Анализ Яндекс.GPT завершен успешно!');
+                } else {
+                    aiPlaceholder.innerHTML = `
+                        <div style="background-color: #fef2f2; border: 1px solid #f87171; border-radius: 8px; padding: 20px; text-align: center;">
+                            <div style="color: #dc2626; font-weight: bold; margin-bottom: 10px;">❌ Ошибка анализа Яндекс.GPT</div>
+                            <div style="color: #6b7280;">${data.error || 'Неизвестная ошибка'}</div>
+                        </div>
+                    `;
+                    showError('Ошибка анализа Яндекс.GPT: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                aiPlaceholder.innerHTML = `
+                    <div style="background-color: #fef2f2; border: 1px solid #f87171; border-radius: 8px; padding: 20px; text-align: center;">
+                        <div style="color: #dc2626; font-weight: bold; margin-bottom: 10px;">❌ Ошибка соединения</div>
+                        <div style="color: #6b7280;">Проверьте подключение к интернету</div>
+                    </div>
+                `;
+                showError('Ошибка соединения: ' + error.message);
+            })
+            .finally(() => {
+                yandexBtn.disabled = false;
+                yandexBtn.textContent = '🔵 Анализ Яндекс.GPT';
+            });
+        }
+
+        function runGigaChatAnalysis() {
+            if (!currentFilename) {
+                showError('Сначала загрузите файл для анализа');
+                return;
+            }
+
+            const aiPlaceholder = document.getElementById('aiPlaceholder');
+            const gigachatBtn = document.querySelector('.gigachat-btn');
+            
+            // Показываем состояние загрузки
+            aiPlaceholder.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="color: #059669; font-size: 1.2rem; margin-bottom: 10px;">🟢 Анализируем данные...</div>
+                    <div style="color: #6b7280;">Отправляем первые 15 строк в GigaChat</div>
+                    <div style="margin-top: 10px; font-size: 0.9rem; color: #9ca3af;">Это может занять несколько секунд</div>
+                </div>
+            `;
+            gigachatBtn.disabled = true;
+            gigachatBtn.textContent = 'Анализируем...';
+
+            fetch('/gigachat_analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    filename: currentFilename
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const analysis = data.analysis;
+                    gigachatAnalysis = analysis.content;
+                    
+                    // Обновляем отображение с учетом обоих анализов
+                    updateAIDisplay();
+                    
+                    showSuccess('Анализ GigaChat завершен успешно!');
+                } else {
+                    aiPlaceholder.innerHTML = `
+                        <div style="background-color: #fef2f2; border: 1px solid #f87171; border-radius: 8px; padding: 20px; text-align: center;">
+                            <div style="color: #dc2626; font-weight: bold; margin-bottom: 10px;">❌ Ошибка анализа GigaChat</div>
+                            <div style="color: #6b7280;">${data.error || 'Неизвестная ошибка'}</div>
+                        </div>
+                    `;
+                    showError('Ошибка анализа GigaChat: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                aiPlaceholder.innerHTML = `
+                    <div style="background-color: #fef2f2; border: 1px solid #f87171; border-radius: 8px; padding: 20px; text-align: center;">
+                        <div style="color: #dc2626; font-weight: bold; margin-bottom: 10px;">❌ Ошибка соединения</div>
+                        <div style="color: #6b7280;">Проверьте подключение к интернету</div>
+                    </div>
+                `;
+                showError('Ошибка соединения: ' + error.message);
+            })
+            .finally(() => {
+                gigachatBtn.disabled = false;
+                gigachatBtn.textContent = '🟢 Анализ GigaChat';
+            });
+        }
+
+        function updateAIDisplay() {
+            const aiPlaceholder = document.getElementById('aiPlaceholder');
+            let content = '';
+
+            if (yandexAnalysis || gigachatAnalysis) {
+                content = '<div style="display: flex; flex-direction: column; gap: 20px;">';
+                
+                if (yandexAnalysis) {
+                    const formattedYandex = formatAIAnalysis(yandexAnalysis);
+                    content += `
+                        <div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <span style="font-size: 1.5rem; margin-right: 10px;">🔵</span>
+                                <div>
+                                    <div style="font-weight: bold; color: #1e3a8a; font-size: 1.1rem;">Анализ от Яндекс.GPT</div>
+                                    <div style="font-size: 0.9rem; color: #6b7280;">Модель: yandexgpt</div>
+                                </div>
+                            </div>
+                            <div style="line-height: 1.6; color: #374151;">
+                                ${formattedYandex}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (gigachatAnalysis) {
+                    const formattedGigaChat = formatAIAnalysis(gigachatAnalysis);
+                    content += `
+                        <div style="background-color: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; padding: 20px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <span style="font-size: 1.5rem; margin-right: 10px;">🟢</span>
+                                <div>
+                                    <div style="font-weight: bold; color: #059669; font-size: 1.1rem;">Анализ от GigaChat</div>
+                                    <div style="font-size: 0.9rem; color: #6b7280;">Модель: gigachat</div>
+                                </div>
+                            </div>
+                            <div style="line-height: 1.6; color: #374151;">
+                                ${formattedGigaChat}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                content += '</div>';
+            } else {
+                content = 'Здесь появится вывод от нейросетей';
+            }
+            
+            aiPlaceholder.innerHTML = content;
+        }
+
+        function formatAIAnalysis(content) {
+            // Форматируем текст от нейросети для лучшего отображения
+            if (!content) return 'Содержимое анализа отсутствует';
+            
+            let formatted = content;
+            
+            // Обрабатываем заголовки Markdown
+            formatted = formatted.replace(/^### (.*$)/gm, '<h4 style="color: #1e3a8a; margin: 15px 0 8px 0; font-size: 1.1rem;">$1</h4>');
+            formatted = formatted.replace(/^## (.*$)/gm, '<h3 style="color: #1e3a8a; margin: 20px 0 10px 0; font-size: 1.2rem;">$1</h3>');
+            formatted = formatted.replace(/^# (.*$)/gm, '<h2 style="color: #1e3a8a; margin: 25px 0 15px 0; font-size: 1.3rem;">$1</h2>');
+            
+            // Обрабатываем горизонтальные линии
+            formatted = formatted.replace(/^---$/gm, '<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">');
+            formatted = formatted.replace(/^\*\*\*$/gm, '<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">');
+            
+            // Обрабатываем списки
+            formatted = formatted.replace(/^- (.*$)/gm, '<div style="margin: 5px 0 5px 20px;">• $1</div>');
+            formatted = formatted.replace(/^\* (.*$)/gm, '<div style="margin: 5px 0 5px 20px;">• $1</div>');
+            
+            // Обрабатываем нумерованные списки
+            formatted = formatted.replace(/^(\d+)\. (.*$)/gm, '<div style="margin: 5px 0 5px 20px;">$1. $2</div>');
+            
+            // Обрабатываем жирный и курсивный текст
+            formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            
+            // Заменяем переносы строк на HTML (только для обычного текста)
+            formatted = formatted.replace(/\n/g, '<br>');
+            
+            return formatted;
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showUploadProgress(show, progress = 0, text = 'Загрузка файла...') {
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            if (show) {
+                progressDiv.style.display = 'block';
+                progressFill.style.width = progress + '%';
+                progressText.textContent = text;
+            } else {
+                progressDiv.style.display = 'none';
+                progressFill.style.width = '0%';
+            }
+        }
+
+        function updateUploadProgress(progress, text) {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            progressFill.style.width = progress + '%';
+            progressText.textContent = text;
+        }
+
+        function showError(message) {
+            hideError();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.upload-section').nextSibling);
+        }
+
+        function showSuccess(message) {
+            hideError();
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            document.querySelector('.container').insertBefore(successDiv, document.querySelector('.upload-section').nextSibling);
+        }
+
+        function hideError() {
+            const existingError = document.querySelector('.error');
+            const existingSuccess = document.querySelector('.success');
+            if (existingError) existingError.remove();
+            if (existingSuccess) existingSuccess.remove();
+        }
+
+        // Функции для генерации PDF
+        function showPDFExportSection() {
+            const pdfSection = document.getElementById('pdfExportSection');
+            pdfSection.style.display = 'block';
+            pdfSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function generatePDF() {
+            const pdfBtn = document.getElementById('pdfBtn');
+            const pdfLoading = document.getElementById('pdfLoading');
+            
+            if (!currentFilename) {
+                showError('Сначала загрузите файл для анализа');
+                return;
+            }
+            
+            // Показываем индикатор загрузки
+            pdfBtn.disabled = true;
+            pdfLoading.classList.add('show');
+            
+            try {
+                // Получаем AI анализы если есть
+                const requestData = {
+                    filename: currentFilename,
+                    yandex_analysis: yandexAnalysis || '',
+                    gigachat_analysis: gigachatAnalysis || ''
+                };
+                
+                // Отправляем запрос на сервер для генерации PDF
+                const response = await fetch('/generate_pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('PDF generation result:', result);
+                
+                if (result.success) {
+                    const downloadUrl = `/download_pdf/${result.pdf_filename}`;
+                    
+                    // Показываем уведомление с кнопкой скачивания
+                    showSuccess('PDF отчёт успешно сгенерирован! Нажмите кнопку ниже для скачивания.');
+                    
+                    // Создаем кнопку для скачивания
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = '📥 Скачать PDF отчёт';
+                    downloadBtn.style.cssText = `
+                        background-color: #10b981;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 6px;
+                        margin: 15px auto;
+                        cursor: pointer;
+                        font-family: 'Georgia', serif;
+                        font-size: 16px;
+                        display: block;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    `;
+                    
+                    downloadBtn.onclick = async function() {
+                        try {
+                            // Способ 1: Fetch + Blob (наиболее надежный)
+                            const response = await fetch(downloadUrl);
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = result.pdf_filename;
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+                            
+                        } catch (error) {
+                            console.error('Ошибка скачивания через fetch:', error);
+                            
+                            // Способ 2: Прямое скачивание (fallback)
+                            const link = document.createElement('a');
+                            link.href = downloadUrl;
+                            link.download = result.pdf_filename;
+                            link.target = '_blank';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            // Способ 3: Открытие в новом окне (fallback)
+                            setTimeout(() => {
+                                window.open(downloadUrl, '_blank');
+                            }, 100);
+                        }
+                    };
+                    
+                    // Добавляем кнопку в контейнер уведомления
+                    const successDiv = document.querySelector('.success');
+                    if (successDiv) {
+                        successDiv.appendChild(downloadBtn);
+                        
+                        // Добавляем подсказку
+                        const hint = document.createElement('div');
+                        hint.style.cssText = `
+                            font-size: 12px;
+                            color: #6b7280;
+                            margin-top: 10px;
+                            text-align: center;
+                        `;
+                        hint.innerHTML = '💡 Если скачивание не работает, попробуйте правый клик → "Сохранить ссылку как..."';
+                        successDiv.appendChild(hint);
+                    }
+                    
+                    // Автоматически пытаемся скачать через 1 секунду
+                    setTimeout(() => {
+                        downloadBtn.click();
+                    }, 1000);
+                } else {
+                    showError('Ошибка генерации PDF: ' + (result.error || 'Неизвестная ошибка'));
+                }
+                
+            } catch (error) {
+                console.error('Ошибка генерации PDF:', error);
+                showError('Ошибка при генерации PDF: ' + error.message);
+            } finally {
+                // Скрываем индикатор загрузки
+                pdfBtn.disabled = false;
+                pdfLoading.classList.remove('show');
+            }
+        }
+
+    </script>
+</body>
+</html>
