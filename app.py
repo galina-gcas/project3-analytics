@@ -37,10 +37,10 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max file size
 app.config['MAX_CONTENT_PATH'] = 200 * 1024 * 1024  # 200MB max content path
 
-# CORS настройки для GitHub Pages
+# CORS настройки для локальной разработки
 from flask_cors import CORS
 CORS(app, 
-     origins=['https://galina-gcas.github.io', 'http://localhost:5000', 'http://localhost:3000'],
+     origins=['http://localhost:5000', 'http://localhost:3000', 'http://127.0.0.1:5000'],
      methods=['GET', 'POST', 'OPTIONS'],
      allow_headers=['Content-Type', 'Authorization'],
      supports_credentials=True)

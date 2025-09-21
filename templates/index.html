@@ -587,28 +587,17 @@
     </div>
 
     <script>
-        // Конфигурация API
-        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-            ? 'http://localhost:5000' 
-            : 'https://project3-analytics.onrender.com'; // Замените YOUR-RENDER-APP-NAME на имя вашего Render сервиса
+        // Конфигурация API - используем относительные пути
+        const API_BASE_URL = '';
         
         // Отладочная информация
-        console.log('API_BASE_URL:', API_BASE_URL);
+        console.log('API_BASE_URL:', API_BASE_URL || 'relative paths');
         console.log('Current hostname:', window.location.hostname);
-        
-        // Проверка доступности API
-        fetch(`${API_BASE_URL}/health`)
-            .then(response => response.json())
-            .then(data => {
-                console.log('API Health Check:', data);
-            })
-            .catch(error => {
-                console.error('API Health Check Failed:', error);
-            });
         
         let currentData = null;
         let currentFilename = null;
         let currentStartRow = 0;
+
 
         // Обработка drag & drop
         const uploadSection = document.getElementById('uploadSection');

@@ -3,12 +3,12 @@
 # Скрипт для быстрого развертывания проекта
 # Использование: ./deploy.sh
 
-echo "🚀 Начинаем развертывание проекта Analytics..."
+echo "🚀 Начинаем развертывание проекта Analytics на Render..."
 
 # Проверяем наличие необходимых файлов
 echo "📋 Проверяем файлы конфигурации..."
 
-required_files=("app.py" "requirements.txt" "Procfile" "runtime.txt" ".github/workflows/deploy.yml" ".nojekyll")
+required_files=("app.py" "requirements.txt" "Procfile" "runtime.txt")
 
 for file in "${required_files[@]}"; do
     if [ ! -f "$file" ]; then
@@ -67,11 +67,7 @@ echo "   - Build Command: pip install -r requirements.txt"
 echo "   - Start Command: gunicorn app:app"
 echo "   - Добавьте переменные окружения из .env"
 echo ""
-echo "3. 📄 Включите GitHub Pages:"
-echo "   - Settings → Pages → Source: GitHub Actions"
-echo "   - Обновите API_BASE_URL в templates/index.html"
-echo ""
-echo "4. 🔄 Запустите деплой:"
+echo "3. 🔄 Запустите деплой:"
 echo "   git push origin master"
 echo ""
 echo "📚 Подробные инструкции в файле DEPLOYMENT.md"
