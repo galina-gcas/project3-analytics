@@ -417,41 +417,6 @@ def health_check():
         'timestamp': datetime.now().isoformat()
     })
 
-@app.route('/test-upload', methods=['POST'])
-def test_upload():
-    """Тестовый endpoint для проверки загрузки файлов"""
-    try:
-        logger.info("Test upload request received")
-        logger.info(f"Request files: {list(request.files.keys())}")
-        logger.info(f"Request form: {dict(request.form)}")
-        
-        if 'file' not in request.files:
-            return jsonify({'error': 'Файл не выбран'}), 400
-        
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'Файл не выбран'}), 400
-        
-        return jsonify({
-            'success': True,
-            'message': 'Файл получен успешно',
-            'filename': file.filename,
-            'content_type': file.content_type,
-            'content_length': file.content_length
-        })
-        
-    except Exception as e:
-        logger.error(f"Ошибка в test-upload: {e}")
-        return jsonify({'error': f'Ошибка: {str(e)}'}), 500
-
-@app.route('/test-simple')
-def test_simple():
-    """Простой тест для проверки работы API"""
-    return jsonify({
-        'status': 'ok',
-        'message': 'Простой тест работает',
-        'timestamp': datetime.now().isoformat()
-    })
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -803,22 +768,22 @@ def yandex_analysis():
                 print("📊 [YANDEX] Читаем PDF файл...")
                 df = extract_table_from_pdf(filepath)
             elif filename.endswith('.csv'):
-                print("📊 [YANDEX] Читаем CSV файл...")
-                df = pd.read_csv(filepath, encoding='utf-8')
+                print("📊 [YANDEX] Читаем CSV файл (первые 15 строк)...")
+                df = pd.read_csv(filepath, encoding='utf-8', nrows=15)
             else:
-                print("📊 [YANDEX] Читаем Excel файл...")
-                df = pd.read_excel(filepath)
+                print("📊 [YANDEX] Читаем Excel файл (первые 15 строк)...")
+                df = pd.read_excel(filepath, nrows=15)
         except Exception as e:
             print(f"⚠️ [YANDEX] Ошибка чтения с UTF-8, пробуем другие кодировки...")
             # Пробуем другие кодировки для CSV
             if filename.endswith('.csv'):
                 try:
                     print("📊 [YANDEX] Пробуем кодировку cp1251...")
-                    df = pd.read_csv(filepath, encoding='cp1251')
+                    df = pd.read_csv(filepath, encoding='cp1251', nrows=15)
                 except:
                     try:
                         print("📊 [YANDEX] Пробуем кодировку latin-1...")
-                        df = pd.read_csv(filepath, encoding='latin-1')
+                        df = pd.read_csv(filepath, encoding='latin-1', nrows=15)
                     except:
                         print(f"❌ [YANDEX] Критическая ошибка чтения файла: {str(e)}")
                         return jsonify({'error': f'Ошибка чтения файла: {str(e)}'}), 500
