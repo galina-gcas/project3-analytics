@@ -33,9 +33,6 @@ GIGACHAT_API_KEY=your_gigachat_api_key_here
 # Yandex GPT API
 YANDEX_FOLDER_ID=your_yandex_folder_id_here
 YANDEX_AUTH=your_yandex_auth_token_here
-
-# Flask секретный ключ
-FLASK_SECRET_KEY=your_secret_key_here
 ```
 
 ## 🌐 Развертывание Backend на Render
@@ -64,7 +61,6 @@ Start Command: gunicorn app:app
 В разделе "Environment" добавьте переменные:
 
 ```
-FLASK_SECRET_KEY=your_secret_key_here
 GIGACHAT_API_KEY=your_gigachat_api_key_here
 YANDEX_FOLDER_ID=your_yandex_folder_id_here
 YANDEX_AUTH=your_yandex_auth_token_here
@@ -98,9 +94,9 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
 
 ### 3. Автоматический деплой
 
-GitHub Actions автоматически развернет frontend при каждом push в ветку `main`:
+GitHub Actions автоматически развернет frontend при каждом push в ветку `master`:
 
-1. Сделайте commit и push изменений
+1. Сделайте commit и push изменений в ветку `master`
 2. Перейдите в раздел "Actions" репозитория
 3. Дождитесь завершения workflow
 4. Ваш сайт будет доступен по адресу: `https://yourusername.github.io/repository-name`
@@ -112,7 +108,7 @@ GitHub Actions автоматически развернет frontend при к�
 - Render автоматически перезапускает сервис
 
 ### Frontend (GitHub Pages)
-- GitHub Actions автоматически обновляет сайт при push в `main`
+- GitHub Actions автоматически обновляет сайт при push в `master`
 - Изменения появляются через 1-2 минуты
 
 ## 🛠️ Локальная разработка
