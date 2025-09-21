@@ -37,13 +37,9 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max file size
 app.config['MAX_CONTENT_PATH'] = 200 * 1024 * 1024  # 200MB max content path
 
-# CORS настройки для локальной разработки
-from flask_cors import CORS
-CORS(app, 
-     origins=['http://localhost:5000', 'http://localhost:3000', 'http://127.0.0.1:5000'],
-     methods=['GET', 'POST', 'OPTIONS'],
-     allow_headers=['Content-Type', 'Authorization'],
-     supports_credentials=True)
+# CORS настройки - не нужны на Render, так как frontend и backend на одном домене
+# from flask_cors import CORS
+# CORS(app)
 
 # Папка для загруженных файлов
 UPLOAD_FOLDER = 'uploads'
@@ -421,10 +417,49 @@ def health_check():
         'timestamp': datetime.now().isoformat()
     })
 
+@app.route('/test-upload', methods=['POST'])
+def test_upload():
+    """Тестовый endpoint для проверки загрузки файлов"""
+    try:
+        logger.info("Test upload request received")
+        logger.info(f"Request files: {list(request.files.keys())}")
+        logger.info(f"Request form: {dict(request.form)}")
+        
+        if 'file' not in request.files:
+            return jsonify({'error': 'Файл не выбран'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'Файл не выбран'}), 400
+        
+        return jsonify({
+            'success': True,
+            'message': 'Файл получен успешно',
+            'filename': file.filename,
+            'content_type': file.content_type,
+            'content_length': file.content_length
+        })
+        
+    except Exception as e:
+        logger.error(f"Ошибка в test-upload: {e}")
+        return jsonify({'error': f'Ошибка: {str(e)}'}), 500
+
+@app.route('/test-simple')
+def test_simple():
+    """Простой тест для проверки работы API"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'Простой тест работает',
+        'timestamp': datetime.now().isoformat()
+    })
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """Загрузка и обработка Excel/CSV/PDF файла"""
     try:
+        logger.info("Upload request received")
+        logger.info(f"Request files: {list(request.files.keys())}")
+        logger.info(f"Request form: {dict(request.form)}")
         if 'file' not in request.files:
             return jsonify({'error': 'Файл не выбран'}), 400
         
@@ -541,7 +576,10 @@ def upload_file():
         })
         
     except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
         logger.error(f"Ошибка обработки файла: {e}")
+        logger.error(f"Traceback: {error_traceback}")
         return jsonify({'error': f'Ошибка обработки файла: {str(e)}'}), 500
 
 @app.route('/load_more', methods=['POST'])
