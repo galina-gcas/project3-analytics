@@ -31,7 +31,7 @@ GIGACHAT_API_KEY=your_gigachat_api_key_here
 
 # Yandex GPT API
 YANDEX_FOLDER_ID=your_yandex_folder_id_here
-YANDEX_AUTH=your_yandex_auth_token_here
+YANDEX_AUTH_TOKEN=your_yandex_auth_token_here
 ```
 
 ## 🌐 Развертывание на Render
@@ -62,7 +62,7 @@ Start Command: gunicorn app:app
 ```
 GIGACHAT_API_KEY=your_gigachat_api_key_here
 YANDEX_FOLDER_ID=your_yandex_folder_id_here
-YANDEX_AUTH=your_yandex_auth_token_here
+YANDEX_AUTH_TOKEN=your_yandex_auth_token_here
 RENDER=true
 ```
 

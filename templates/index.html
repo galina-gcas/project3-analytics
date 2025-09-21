@@ -590,9 +590,6 @@
         // Конфигурация API - используем относительные пути
         const API_BASE_URL = '';
         
-        // Отладочная информация
-        console.log('API_BASE_URL:', API_BASE_URL || 'relative paths');
-        console.log('Current hostname:', window.location.hostname);
         
         let currentData = null;
         let currentFilename = null;
@@ -656,32 +653,16 @@
             }, 200);
 
             const uploadUrl = `${API_BASE_URL}/upload`;
-            console.log('Upload URL:', uploadUrl);
-            console.log('FormData:', formData);
             
             fetch(uploadUrl, {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                console.log('Response ok:', response.ok);
-                
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                
-                return response.text().then(text => {
-                    console.log('Response text:', text);
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error('JSON parse error:', e);
-                        console.error('Response was not JSON:', text);
-                        throw new Error('Server returned invalid JSON: ' + text.substring(0, 100));
-                    }
-                });
+                return response.json();
             })
             .then(data => {
                 clearInterval(progressInterval);

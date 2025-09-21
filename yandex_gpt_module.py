@@ -18,11 +18,11 @@ class YandexGPTAnalyzer:
     def __init__(self):
         """Инициализация с параметрами из .env файла"""
         self.folder_id = os.getenv('YANDEX_FOLDER_ID')
-        self.auth_token = os.getenv('YANDEX_AUTH')
+        self.auth_token = os.getenv('YANDEX_AUTH_TOKEN')
         
         if not self.folder_id or not self.auth_token:
             raise ValueError(
-                "Не заданы переменные окружения YANDEX_FOLDER_ID и YANDEX_AUTH. "
+                "Не заданы переменные окружения YANDEX_FOLDER_ID и YANDEX_AUTH_TOKEN. "
                 "Проверьте файл .env"
             )
         
