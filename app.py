@@ -989,28 +989,28 @@ def generate_pdf():
         
         print(f"✅ [PDF] Файл найден: {filepath}")
         
-        # Читаем файл (только первые 50 строк для PDF)
+        # Читаем файл
         try:
             if filename.endswith('.pdf'):
                 print("📊 [PDF] Читаем PDF файл...")
                 df = extract_table_from_pdf(filepath)
             elif filename.endswith('.csv'):
-                print("📊 [PDF] Читаем CSV файл (первые 50 строк)...")
-                df = pd.read_csv(filepath, encoding='utf-8', nrows=50)
+                print("📊 [PDF] Читаем CSV файл...")
+                df = pd.read_csv(filepath, encoding='utf-8')
             else:
-                print("📊 [PDF] Читаем Excel файл (первые 50 строк)...")
-                df = pd.read_excel(filepath, nrows=50)
+                print("📊 [PDF] Читаем Excel файл...")
+                df = pd.read_excel(filepath)
         except Exception as e:
             print(f"⚠️ [PDF] Ошибка чтения с UTF-8, пробуем другие кодировки...")
             # Пробуем другие кодировки для CSV
             if filename.endswith('.csv'):
                 try:
                     print("📊 [PDF] Пробуем кодировку cp1251...")
-                    df = pd.read_csv(filepath, encoding='cp1251', nrows=50)
+                    df = pd.read_csv(filepath, encoding='cp1251')
                 except:
                     try:
                         print("📊 [PDF] Пробуем кодировку latin-1...")
-                        df = pd.read_csv(filepath, encoding='latin-1', nrows=50)
+                        df = pd.read_csv(filepath, encoding='latin-1')
                     except:
                         print(f"❌ [PDF] Критическая ошибка чтения файла: {str(e)}")
                         return jsonify({'error': f'Ошибка чтения файла: {str(e)}'}), 500
