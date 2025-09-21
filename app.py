@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 
 # Создание Flask приложения
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max file size
 app.config['MAX_CONTENT_PATH'] = 200 * 1024 * 1024  # 200MB max content path
 

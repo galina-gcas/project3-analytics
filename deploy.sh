@@ -43,13 +43,13 @@ echo "✅ Git репозиторий чист"
 
 # Проверяем ветку
 current_branch=$(git branch --show-current)
-if [ "$current_branch" != "main" ]; then
-    echo "⚠️  Вы не в ветке main. Переключитесь на main:"
-    echo "   git checkout main"
+if [ "$current_branch" != "master" ]; then
+    echo "⚠️  Вы не в ветке master. Переключитесь на master:"
+    echo "   git checkout master"
     exit 1
 fi
 
-echo "✅ Вы в ветке main"
+echo "✅ Вы в ветке master"
 
 # Инструкции для пользователя
 echo ""
@@ -57,7 +57,7 @@ echo "🎯 Следующие шаги для развертывания:"
 echo ""
 echo "1. 📤 Загрузите код в GitHub (если еще не сделано):"
 echo "   git remote add origin https://github.com/yourusername/your-repo.git"
-echo "   git push -u origin main"
+echo "   git push -u origin master"
 echo ""
 echo "2. 🌐 Создайте Web Service на Render:"
 echo "   - Перейдите на https://render.com"
@@ -72,7 +72,7 @@ echo "   - Settings → Pages → Source: GitHub Actions"
 echo "   - Обновите API_BASE_URL в templates/index.html"
 echo ""
 echo "4. 🔄 Запустите деплой:"
-echo "   git push origin main"
+echo "   git push origin master"
 echo ""
 echo "📚 Подробные инструкции в файле DEPLOYMENT.md"
 echo ""
