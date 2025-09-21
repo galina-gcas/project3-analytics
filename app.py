@@ -34,9 +34,13 @@ logger = logging.getLogger(__name__)
 
 # Создание Flask приложения
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-here'
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'your-secret-key-here')
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max file size
 app.config['MAX_CONTENT_PATH'] = 200 * 1024 * 1024  # 200MB max content path
+
+# CORS настройки для GitHub Pages
+from flask_cors import CORS
+CORS(app, origins=['https://yourusername.github.io', 'http://localhost:5000'])
 
 # Папка для загруженных файлов
 UPLOAD_FOLDER = 'uploads'
@@ -1117,5 +1121,15 @@ if __name__ == '__main__':
     os.makedirs('static', exist_ok=True)
     os.makedirs('uploads', exist_ok=True)
     
+    # Определяем порт для Render
+    port = int(os.environ.get('PORT', 5000))
+    
     logger.info("Запуск веб-приложения для анализа Excel/CSV/PDF файлов...")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    
+    # Запуск в зависимости от окружения
+    if os.environ.get('RENDER'):
+        # Продакшен режим для Render
+        app.run(host='0.0.0.0', port=port, debug=False)
+    else:
+        # Локальная разработка
+        app.run(debug=True, host='0.0.0.0', port=port)
