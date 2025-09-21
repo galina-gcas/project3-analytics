@@ -92,7 +92,16 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
 3. В "Source" выберите "GitHub Actions"
 4. Сохраните настройки
 
-### 3. Автоматический деплой
+### 3. Настройка прав доступа
+
+Если возникают ошибки с правами доступа:
+
+1. Перейдите в Settings → Actions → General
+2. В разделе "Workflow permissions" выберите "Read and write permissions"
+3. Отметьте "Allow GitHub Actions to create and approve pull requests"
+4. Сохраните изменения
+
+### 4. Автоматический деплой
 
 GitHub Actions автоматически развернет frontend при каждом push в ветку `master`:
 
@@ -151,6 +160,20 @@ python -m http.server 8000
 Если возникают ошибки CORS, убедитесь что:
 1. В `app.py` правильно настроен CORS
 2. URL в `API_BASE_URL` соответствует вашему Render сервису
+
+### Ошибки прав доступа GitHub Actions:
+Если возникает ошибка "Permission denied to github-actions[bot]":
+
+1. **Настройте права доступа**:
+   - Settings → Actions → General
+   - "Workflow permissions" → "Read and write permissions"
+   - Отметьте "Allow GitHub Actions to create and approve pull requests"
+
+2. **Проверьте настройки Pages**:
+   - Settings → Pages → Source: "GitHub Actions"
+
+3. **Перезапустите workflow**:
+   - Actions → выберите failed workflow → "Re-run jobs"
 
 ## 📊 Мониторинг
 
