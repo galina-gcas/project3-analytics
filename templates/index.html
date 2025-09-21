@@ -592,6 +592,20 @@
             ? 'http://localhost:5000' 
             : 'https://project3-analytics.onrender.com'; // Замените YOUR-RENDER-APP-NAME на имя вашего Render сервиса
         
+        // Отладочная информация
+        console.log('API_BASE_URL:', API_BASE_URL);
+        console.log('Current hostname:', window.location.hostname);
+        
+        // Проверка доступности API
+        fetch(`${API_BASE_URL}/health`)
+            .then(response => response.json())
+            .then(data => {
+                console.log('API Health Check:', data);
+            })
+            .catch(error => {
+                console.error('API Health Check Failed:', error);
+            });
+        
         let currentData = null;
         let currentFilename = null;
         let currentStartRow = 0;
