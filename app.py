@@ -39,7 +39,11 @@ app.config['MAX_CONTENT_PATH'] = 200 * 1024 * 1024  # 200MB max content path
 
 # CORS настройки для GitHub Pages
 from flask_cors import CORS
-CORS(app, origins=['https://galina-gcas.github.io', 'http://localhost:5000'])
+CORS(app, 
+     origins=['https://galina-gcas.github.io', 'http://localhost:5000', 'http://localhost:3000'],
+     methods=['GET', 'POST', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization'],
+     supports_credentials=True)
 
 # Папка для загруженных файлов
 UPLOAD_FOLDER = 'uploads'
@@ -407,6 +411,15 @@ def extract_table_from_pdf(filepath):
 def index():
     """Главная страница"""
     return render_template('index.html')
+
+@app.route('/health')
+def health_check():
+    """Проверка работоспособности API"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'API работает',
+        'timestamp': datetime.now().isoformat()
+    })
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
