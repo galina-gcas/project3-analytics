@@ -422,9 +422,6 @@ def health_check():
 def upload_file():
     """Загрузка и обработка Excel/CSV/PDF файла"""
     try:
-        logger.info("Upload request received")
-        logger.info(f"Request files: {list(request.files.keys())}")
-        logger.info(f"Request form: {dict(request.form)}")
         if 'file' not in request.files:
             return jsonify({'error': 'Файл не выбран'}), 400
         
