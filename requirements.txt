@@ -1,6 +1,8 @@
 # Веб-фреймворк
 Flask>=2.3.0
 Werkzeug>=2.3.0
+gunicorn>=21.2.0
+flask-cors>=4.0.0
 
 # Работа с Excel и данными
 pandas>=2.0.0
@@ -26,5 +28,8 @@ gigachat>=0.1.0
 # PDF генерация
 reportlab>=4.0.0
 Pillow>=10.0.0
+
+# Production dependencies
+psycopg2-binary>=2.9.0
 
 

@@ -587,6 +587,11 @@
     </div>
 
     <script>
+        // Конфигурация API
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:5000' 
+            : 'https://your-render-app-name.onrender.com'; // Замените на ваш URL Render
+        
         let currentData = null;
         let currentFilename = null;
         let currentStartRow = 0;
@@ -647,7 +652,7 @@
                 updateUploadProgress(progress, `Загрузка файла... ${Math.round(progress)}%`);
             }, 200);
 
-            fetch('/upload', {
+            fetch(`${API_BASE_URL}/upload`, {
                 method: 'POST',
                 body: formData
             })
@@ -897,7 +902,7 @@
             const originalText = categorySelect.options[0].textContent;
             categorySelect.options[0].textContent = 'Создаем диаграмму...';
             
-            fetch('/create_chart', {
+            fetch(`${API_BASE_URL}/create_chart`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -946,7 +951,7 @@
             loadMoreBtn.textContent = 'Загрузка...';
             loadMoreBtn.disabled = true;
 
-            fetch('/load_more', {
+            fetch(`${API_BASE_URL}/load_more`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1020,7 +1025,7 @@
             yandexBtn.disabled = true;
             yandexBtn.textContent = 'Анализируем...';
 
-            fetch('/yandex_analysis', {
+            fetch(`${API_BASE_URL}/yandex_analysis`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1085,7 +1090,7 @@
             gigachatBtn.disabled = true;
             gigachatBtn.textContent = 'Анализируем...';
 
-            fetch('/gigachat_analysis', {
+            fetch(`${API_BASE_URL}/gigachat_analysis`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1291,7 +1296,7 @@
                 };
                 
                 // Отправляем запрос на сервер для генерации PDF
-                const response = await fetch('/generate_pdf', {
+                const response = await fetch(`${API_BASE_URL}/generate_pdf`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1307,7 +1312,7 @@
                 console.log('PDF generation result:', result);
                 
                 if (result.success) {
-                    const downloadUrl = `/download_pdf/${result.pdf_filename}`;
+                    const downloadUrl = `${API_BASE_URL}/download_pdf/${result.pdf_filename}`;
                     
                     // Показываем уведомление с кнопкой скачивания
                     showSuccess('PDF отчёт успешно сгенерирован! Нажмите кнопку ниже для скачивания.');
